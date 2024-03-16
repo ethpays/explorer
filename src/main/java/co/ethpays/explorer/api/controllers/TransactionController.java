@@ -3,12 +3,14 @@ package co.ethpays.explorer.api.controllers;
 import co.ethpays.explorer.entity.Transaction;
 import co.ethpays.explorer.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,5 +36,10 @@ public class TransactionController {
             data.put("timestamp", String.valueOf(transaction.getCreatedAt().getTime()));
             return data;
         }
+    }
+
+    @GetMapping(value = "/latest7")
+    public List<Transaction> getLatest7Transactions() {
+        return transactionRepository.findByStatusOrderByCreatedAtDesc("completed", PageRequest.of(0, 7));
     }
 }
