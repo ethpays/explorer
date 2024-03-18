@@ -7,17 +7,22 @@ import co.ethpays.explorer.entity.TransactionOverviewDto;
 import co.ethpays.explorer.repositories.BalanceRepository;
 import co.ethpays.explorer.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.DecimalFormat;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/transaction")
@@ -84,13 +89,28 @@ public class TransactionController {
     public List<SimpleTransactionDto> getTop100EthpaysTransactions() {
         List<Transaction> transactions =  transactionRepository.findByIsEthpaysTransactionIsTrueOrderByCreatedAtDesc(PageRequest.of(0, 100));
         List<SimpleTransactionDto> simpleTransactionDtos = new ArrayList<>();
+        DecimalFormat df = new DecimalFormat("#'###'###.00");
+
         for (Transaction transaction : transactions) {
             SimpleTransactionDto newTrans = new SimpleTransactionDto();
             newTrans.setTransactionId(transaction.getTransactionId());
-            newTrans.setAmount(transaction.getAmount());
-            newTrans.setCurrency(transaction.getCurrency());
+            newTrans.setX(df.format(transaction.getAmount()) + " " + transaction.getCurrency().toUpperCase());
+            if (transaction.getCurrency().equalsIgnoreCase("usdt")) {
+                newTrans.setY(transaction.getAmount());
+            } else {
+                newTrans.setY(getCryptoMarketPrice(transaction.getCurrency()) * transaction.getAmount());
+            }
             simpleTransactionDtos.add(newTrans);
         }
         return simpleTransactionDtos;
+    }
+
+    public double getCryptoMarketPrice(String currency) {
+        logger.info("Fetching market price for " + currency);
+        RestTemplate restTemplate = new RestTemplate();
+        String binanceApiUrl = "https://api.binance.com/api/v3/ticker/price?symbol=" + currency.toUpperCase() + "USDT";
+        String response = restTemplate.getForObject(binanceApiUrl, String.class);
+        JSONObject jsonObject = new JSONObject(response);
+        return jsonObject.getDouble("price");
     }
 }
