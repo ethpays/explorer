@@ -1,5 +1,6 @@
 package co.ethpays.explorer.repositories;
 
+import co.ethpays.explorer.entity.SimpleTransactionDto;
 import co.ethpays.explorer.entity.Transaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,5 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
     Transaction findByTransactionId(String transactionId);
     List<Transaction> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+    List<Transaction> findByIsEthpaysTransactionIsTrueOrderByCreatedAtDesc(Pageable pageable);
 }

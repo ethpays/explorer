@@ -26,6 +26,8 @@ public class Transaction {
     private String title;
     private Date createdAt;
 
+    private boolean isEthpaysTransaction;
+
     public Transaction() {}
 
     public Transaction(double amount, String username, String currency, String fromWallet, String toWallet, String type, String status, String transactionId, Date createdAt, String title) {
