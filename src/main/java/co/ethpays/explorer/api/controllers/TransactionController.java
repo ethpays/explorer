@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.text.DecimalFormat;
 
 @Slf4j
 @RestController
@@ -89,8 +89,7 @@ public class TransactionController {
     public List<SimpleTransactionDto> getTop100EthpaysTransactions() {
         List<Transaction> transactions =  transactionRepository.findByIsEthpaysTransactionIsTrueOrderByCreatedAtDesc(PageRequest.of(0, 100));
         List<SimpleTransactionDto> simpleTransactionDtos = new ArrayList<>();
-        DecimalFormat df = new DecimalFormat("#'###'###.00");
-
+        DecimalFormat df = new DecimalFormat("#,###.00");
         for (Transaction transaction : transactions) {
             SimpleTransactionDto newTrans = new SimpleTransactionDto();
             newTrans.setTransactionId(transaction.getTransactionId());
@@ -106,7 +105,6 @@ public class TransactionController {
     }
 
     public double getCryptoMarketPrice(String currency) {
-        logger.info("Fetching market price for " + currency);
         RestTemplate restTemplate = new RestTemplate();
         String binanceApiUrl = "https://api.binance.com/api/v3/ticker/price?symbol=" + currency.toUpperCase() + "USDT";
         String response = restTemplate.getForObject(binanceApiUrl, String.class);
